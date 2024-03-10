@@ -1,13 +1,30 @@
 # Use the official .NET SDK image as the base image
-FROM python:3.11.7-slim-bullseye
+FROM golang:1.22.1-alpine3.19 AS builder
 
-# Set the working directory inside the container
-WORKDIR /api
+# Set working directory for the build context
+WORKDIR /app
 
-# Copy the contents of src directory
+# Copy the dependency files first
 COPY src/ ./
 
-RUN pip install -r requirements.txt
+# Install dependencies
+RUN go mod download && go mod verify
 
-# Set the entry point for the container
-ENTRYPOINT ["python", "init.py"]
+# Build the application (replace with your own build command)
+# Assuming your main entry point is in cmd/main.go
+RUN go build -o Rinha24MarceloGo .
+
+# Use a smaller image for running the application
+FROM alpine
+
+# Copy the compiled binary from the builder stage
+COPY --from=builder /app/Rinha24MarceloGo /app/Rinha24MarceloGo
+
+# Set the working directory for the application
+WORKDIR /app
+
+# Set the entrypoint to 'som'
+ENTRYPOINT ["./Rinha24MarceloGo"]
+
+# Expose the port your application listens on (if applicable)
+# EXPOSE 8080  # Example: Expose port 8080
